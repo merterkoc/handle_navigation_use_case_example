@@ -33,31 +33,21 @@ abstract class BackButtonInterceptor implements WidgetsBinding {
   static Future<void> Function(String?) handlePushRouteFunction =
       WidgetsBinding.instance.handlePushRoute as Future<void> Function(String?);
 
-  // static Future<void> Function(Map<dynamic, dynamic>)
-  //     handlePushRouteInformationFunction =
-  //     WidgetsBinding.instance.handlePushRouteInformation as Future<void>
-  //         Function(Map<dynamic, dynamic>);
+  static Future<void> Function(Map<dynamic, dynamic>)
+      handlePushRouteInformationFunction =
+      WidgetsBinding.instance.handlePushRouteInformation as Future<void>
+          Function(Map<dynamic, dynamic>);
 
-  /// Sets a function of type [InterceptorFunction] to be called when the back button is tapped.
-  /// This function may perform some useful work, and then, if it returns `true`,
-  /// the default button process (usually popping a Route) will NOT be fired.
-  ///
-  /// Functions added last are called first.
-  ///
-  /// If the optional [ifNotYetIntercepted] parameter is true, then the function will only be
-  /// called if all previous functions returned `false` (that is, `stopDefaultButtonEvent` is
-  /// `false`).
-  ///
-  /// Optionally, you may provide a [zIndex]. Functions with a valid z-index will be called before
-  /// functions with a null z-index, and functions with larger z-index will be called first.
-  /// When they have the same z-index, functions added last are called first.
-  ///
-  /// Optionally, you may provide a [name]. This is useful if you later want to removes the
-  /// function by name by using the [removeByName] method.
-  ///
-  /// You can also provide the current [context]. That's optional, and you only need to do this if
-  /// later you want to use [RouteInfo.ifRouteChanged].
-  ///
+  static Future<dynamic> Function(
+      MethodCall
+          methodCall) handleNavigationInvocationFunction = WidgetsBinding
+      .instance.handleNavigationInvocation as Future<dynamic>Function(MethodCall methodCall); // << I added this method here to show an example. Actually dispose should be instant
+  // ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  // This method is called by the Flutter engine when the user presses the back button(etc).
+  // I think can be  public and does not break Flutter's route mechanism. Otherwise I think
+  // it may cause more problems if we use it this way.
+  // It should be public [WidgetsBinding.instance.handleNavigationInvocation].
+
   static void add(
     InterceptorFunction interceptorFunction, {
     bool ifNotYetIntercepted = false,
@@ -75,71 +65,25 @@ abstract class BackButtonInterceptor implements WidgetsBinding {
           (context == null) ? null : getCurrentNavigatorRoute(context),
         ));
     // stableSort(_interceptors);
+    /// Here I am replacing the default navigation invocation method with the method I implemented myself.
     SystemChannels.navigation.setMethodCallHandler(_handleNavigationInvocation);
   }
 
-  /// Removes the function, by reference.
-  /// Example:
-  ///
-  /// ```
-  /// void initState() {
-  ///    super.initState();
-  ///    BackButtonInterceptor.add(_onBackButton);
-  /// }
-  ///
-  /// void dispose() {
-  ///    BackButtonInterceptor.remove(_onBackButton);
-  ///    super.dispose();
-  /// }
-  ///
-  /// bool _onBackButton(bool stopDefaultButtonEvent, RouteInfo info) { ... }
-  /// ```
-  ///
   static void remove(InterceptorFunction interceptorFunction) {
+    /// Here I need to replace back to the default navigation invocation.
+    /// I can't because the method is private.
+    /// I can change the default navigation invocation mechanism using SystemChannels.navigation.setMethodCallHandler method.
+    /// Therefore, having the WidgetsBinding.instance.handleNavigationInvocation method private does not help anyone.
+    /// Making this method public will make the route process more flexible and will not create a vulnerability in the flutter library.
+    SystemChannels.navigation.setMethodCallHandler(handleNavigationInvocationFunction);
     _interceptors.removeWhere((interceptor) =>
         interceptor.interceptionFunction == interceptorFunction);
   }
 
-  /// Removes the function, by name.
-  /// Example:
-  ///
-  /// ```
-  /// void initState() {
-  ///    super.initState();
-  ///    BackButtonInterceptor.add(_onBackButton, name: 'myInterceptor');
-  /// }
-  ///
-  /// void dispose() {
-  ///    BackButtonInterceptor.removeByName('myInterceptor');
-  ///    super.dispose();
-  /// }
-  ///
-  /// bool _onBackButton(bool stopDefaultButtonEvent, RouteInfo info) { ... }
-  /// ```
-  ///
   static void removeByName(String name) {
     _interceptors.removeWhere((interceptor) => interceptor.name == name);
   }
 
-  /// Removes all functions.
-  /// Example:
-  ///
-  /// ```
-  /// void initState() {
-  ///    super.initState();
-  ///    BackButtonInterceptor.add(_onBackButton);
-  /// }
-  ///
-  /// void dispose() {
-  ///    // Not recommended, because it will remove all functions,
-  ///    // not only the one created above.
-  ///    BackButtonInterceptor.removeAll();
-  ///    super.dispose();
-  /// }
-  ///
-  /// bool _onBackButton(bool stopDefaultButtonEvent, RouteInfo info) { ... }
-  /// ```
-  ///
   static void removeAll() {
     _interceptors.clear();
   }
@@ -167,14 +111,9 @@ abstract class BackButtonInterceptor implements WidgetsBinding {
       return popRoute();
     } else if (methodCall.method == 'pushRoute') {
       return _pushRoute(methodCall.arguments);
-    }
-
-    // PUSH.
-    // else if (methodCall.method == 'pushRouteInformation')
-    //   return _pushRouteInformation(methodCall.arguments);
-
-    // OTHER.
-    else {
+    } else if (methodCall.method == 'pushRouteInformation') {
+      return _pushRouteInformation(methodCall.arguments);
+    } else {
       return Future<dynamic>.value();
     }
   }
@@ -236,8 +175,9 @@ abstract class BackButtonInterceptor implements WidgetsBinding {
   static Future<void> _pushRoute(dynamic arguments) =>
       handlePushRouteFunction(arguments as String?);
 
-  // static Future<void> _pushRouteInformation(dynamic arguments) =>
-  //     handlePushRouteInformationFunction(arguments as Map<dynamic, dynamic>);
+  static Future<void> _pushRouteInformation(dynamic arguments) =>
+      // TODO I need to call handlePushRouteInformation function here
+      handlePushRouteInformationFunction(arguments as Map<dynamic, dynamic>);
 
   /// Describes all interceptors, with their names and z-indexes.
   /// This may help you debug your interceptors, by printing them
