@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:handle_navigation_use_case/loader_overlay/overlay_controller_widget_extension.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
@@ -21,6 +22,7 @@ class HomePage extends StatelessWidget {
                 ElevatedButton(
                   onPressed: () {
                     context.go('/details');
+                    context.loaderOverlay.show();
                   },
                   child: const Text('Details'),
                 ),
