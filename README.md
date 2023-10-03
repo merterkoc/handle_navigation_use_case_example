@@ -20,4 +20,17 @@ If SystemChannels.navigation.setMethodCallHandler can be modified at runtime, we
 access its old value, and it should be adjustable.
 The lines you need to review are back_button_interceptor line: 70, 79.
 
+## Steps to Follow
+
+- [`context.loaderOverlay.show()`](./lib/page/home_page.dart#L25)
+- [`loaderOverlay.build()`](./lib/loader_overlay/loader_overlay.dart#L150)
+- [`backButtonInterceptor.add()`](./lib/back_button_interceptor/back_button_interceptor.dart#L69) At
+  this point I removed flutter navigation handling mechanism with my custom navigation handler.
+- [`context.loaderOverlay.show()`](./lib/page/detail_screen.dart#L20)
+- [`loaderOverlay.build()`](./lib/loader_overlay/loader_overlay.dart#L152)
+- [`backButtonInterceptor.remove()`](./lib/back_button_interceptor/back_button_interceptor.dart#L78)
+  At this point I need to
+  restore [flutter navigation handling](https://github.com/flutter/flutter/blob/ebd7610526087b7b406c6570e0a3a9489e5dc379/packages/flutter/lib/src/widgets/binding.dart#L778)
+  mechanism. But it is private.
+
 ![alt-text](./use-case-diagram.png "Use case diagram")
