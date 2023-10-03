@@ -66,7 +66,7 @@ abstract class BackButtonInterceptor implements WidgetsBinding {
         ));
     // stableSort(_interceptors);
     /// Here I am replacing the default navigation invocation method with the method I implemented myself.
-    SystemChannels.navigation.setMethodCallHandler(_handleNavigationInvocation);
+    SystemChannels.navigation.setMethodCallHandler(_myCustomHandleNavigationInvocation);
   }
 
   static void remove(InterceptorFunction interceptorFunction) {
@@ -104,7 +104,7 @@ abstract class BackButtonInterceptor implements WidgetsBinding {
   static String? getCurrentNavigatorRouteName(BuildContext context) =>
       getCurrentNavigatorRoute(context)!.settings.name;
 
-  static Future<dynamic> _handleNavigationInvocation(
+  static Future<dynamic> _myCustomHandleNavigationInvocation(
       MethodCall methodCall) async {
     // POP.
     if (methodCall.method == 'popRoute') {
