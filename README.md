@@ -26,7 +26,7 @@ The lines you need to review are back_button_interceptor line: 70, 79.
 - [`loaderOverlay.build()`](./lib/loader_overlay/loader_overlay.dart#L150)
 - [`backButtonInterceptor.add()`](./lib/back_button_interceptor/back_button_interceptor.dart#L69) At
   this point I removed flutter navigation handling mechanism with my custom navigation handler.
-- [`context.loaderOverlay.show()`](./lib/page/detail_screen.dart#L20)
+- [`context.loaderOverlay.hide()`](./lib/page/detail_screen.dart#L20)
 - [`loaderOverlay.build()`](./lib/loader_overlay/loader_overlay.dart#L152)
 - [`backButtonInterceptor.remove()`](./lib/back_button_interceptor/back_button_interceptor.dart#L78)
   At this point I need to
